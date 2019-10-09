@@ -10,7 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
+## Problem 1
 ```{r}
-
+insta_data = readr::read_csv(file = "./data/instacart.csv")
 ```
 
