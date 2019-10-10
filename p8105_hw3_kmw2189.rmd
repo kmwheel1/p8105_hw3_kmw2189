@@ -11,7 +11,97 @@ library(tidyverse)
 ```
 
 ## Problem 1
+The goal is to do some exploration of this dataset. To that end, write a short description of the dataset, noting the size and structure of the data, describing some key variables, and giving illstrative examples of observations. 
+```{r importing problem 1 data, include = FALSE}
+insta_data = readr::read_csv(file = "./data/instacart.csv.zip") 
+
+##The dataset has 1,384,617 rows of data for 131,206 distinct orders
+nrow(insta_data)
+n_distinct(pull(insta_data, order_id))
+
+
+## Looking at individual variables 
+#order_id - order ID has a mean of 1706298 and max value of 3421070
+mean(pull(insta_data, order_id))
+max(pull(insta_data, order_id))
+
+insta_data %>% 
+  group_by(order_id) %>% 
+  summarize(
+    n_obs = n(),
+    n_distinct(product_id)
+  ) 
+ 
+
+#product_id - there are 39,123 unique products ordered in this dataset
+n_distinct(pull(insta_data, product_id))
+
+
+#add_to_cart_order - the maximum add to cart order was 80
+max(pull(insta_data, add_to_cart_order))
+
+##what was the number 1 item added to carts - COME BACK TO THIS
+
+
+#reordered
+insta_data %>% 
+mutate(
+  total_reorder = sum(reorder)
+)
+
+
+ggplot(insta_data, aes(x = reordered)) + 
+  geom_histogram(binwidth = 0.45) +
+  labs(
+    title = "Percentage of items that are reordered",
+    x = "Reorder",
+    y = "Frequency",
+    caption = "Instacart grocery order data."
+  ) +
+  scale_x_continuous(
+    breaks = c(0, 1), 
+    labels = c("no", "yes")
+    )
+
+#order_hour_of_day
+ggplot, which time of day is most popular
+
+#days_since_prior_order
+avg
+
+#product_name
+what is the most popular product
+```
+
+How many aisles are there, and which aisles are the most items ordered from?
 ```{r}
-insta_data = readr::read_csv(file = "./data/instacart.csv")
+max(pull(insta_data, aisle_id))
+n_distinct(pull(insta_data, aisle_id))
+
+insta_data %>% 
+  group_by(aisle) %>% 
+  summarize(
+    n = n()
+  ) %>% 
+  arrange(desc)
+    
+
+
+```
+There are 134 aisle at the instacart warehouse. 
+
+Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
+```{r}
+
+```
+
+Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
+```{r}
+
+```
+
+Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+```{r}
+
 ```
 
