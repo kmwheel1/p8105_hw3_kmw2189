@@ -107,10 +107,32 @@ insta_data %>%
 ```
 
 
-**Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
+**Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.**
+
 ```{r}
+aisles_over_1000 = 
+ insta_data %>% 
+  group_by(aisle_id) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count)) %>% 
+  filter(count > 1000) 
+ 
+ggplot(aisles_over_1000, aes(x = aisle_id, y = count)) + 
+  geom_point(aes(alpha = .5))
+
+ggplot(aisles_over_1000, aes(x = aisle_id)) + 
+  geom_histogram(binwidth = 30) +
+  labs(
+    title = "Aisles with the most Orders",
+    x = "Aisle",
+    y = "Frequency",
+    caption = "Aisles with over 1,000 products ordered"
+  ) 
+
+
 
 ```
+
 
 Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
 ```{r}
