@@ -2,7 +2,7 @@
 title: "Homework 3"
 author: "Kylie Wheelock Riley"
 date: "10/8/2019"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -107,40 +107,72 @@ insta_data %>%
 ```
 
 
-**Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.**
+**1B) Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.**
 
-```{r}
-aisles_over_1000 = 
+```{r prob 1B, echo = FALSE}
+aisles_over_10000 = 
  insta_data %>% 
   group_by(aisle_id) %>%
   summarize(count = n()) %>%
   arrange(desc(count)) %>% 
-  filter(count > 1000) 
+  filter(count > 10000) 
  
-ggplot(aisles_over_1000, aes(x = aisle_id, y = count)) + 
+ggplot(aisles_over_10000, aes(x = aisle_id, y = count)) + 
   geom_point(aes(alpha = .5))
 
-ggplot(aisles_over_1000, aes(x = aisle_id)) + 
+ggplot(aisles_over_10000, aes(x = aisle_id)) + 
   geom_histogram(binwidth = 30) +
   labs(
     title = "Aisles with the most Orders",
     x = "Aisle",
     y = "Frequency",
-    caption = "Aisles with over 1,000 products ordered"
+    caption = "Aisles with over 10,000 products ordered"
   ) 
 
 
-
 ```
 
 
-Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
-```{r}
+**1C) Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.**
+```{r prob 1c, echo = FALSE}
+prob_1c_df = 
+  insta_data %>% 
+   filter(aisle %in% c("baking ingredients" , "dog food care" , "packaged vegetables fruits" ))
+  
+ 
+prob_1c_df %>%    
+  group_by(aisle, product_name) %>% 
+  summarize(count = n()) %>% 
+  arrange(desc(count)) %>% 
+  slice(1:3) %>% 
+  knitr::kable()
 
 ```
 
-Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
-```{r}
+**1D) Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).**
+```{r prob 1D, echo = FALSE}
+prob_1d_df = 
+  insta_data %>% 
+   filter(product_name %in% c("Pink Lady Apples" , "Coffee Ice Cream" )) %>% 
+    mutate(
+    order_dow = as.character(order_dow), 
+    order_dow = recode(order_dow, "0" = "Sun", "1" = "Mon", "2" = "Tue", "3" = "Wed", "4" = "Thu", "5" = "Fri", "6" = "Sat")
+    ) %>% 
+   select(product_name, order_dow, order_hour_of_day)
+  
+  
+ 
+prob_1d_df %>% 
+  group_by(product_name, order_dow) %>% 
+  summarize(
+  mean_hour = mean(order_hour_of_day)
+  ) %>% 
+  pivot_wider(
+    names_from = order_dow,
+    values_from = mean_hour
+  ) %>% 
+ ## order(order_dow, c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")) %>% 
+  knitr::kable(digits = 2)
 
 ```
 
