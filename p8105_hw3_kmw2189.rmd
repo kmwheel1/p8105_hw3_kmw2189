@@ -11,7 +11,6 @@ library(tidyverse)
 ```
 
 ## Problem 1
-The goal is to do some exploration of this dataset. To that end, write a short description of the dataset, noting the size and structure of the data, describing some key variables, and giving illstrative examples of observations. 
 ```{r importing problem 1 data, include = FALSE}
 insta_data = readr::read_csv(file = "./data/instacart.csv.zip") 
 
@@ -90,6 +89,9 @@ insta_data %>%
   knitr::kable()
 
 ```
+The Instacart dataset has `r nrow(insta_data)` rows of data for `r n_distinct(pull(insta_data, order_id))` distinct orders. There were `r n_distinct(pull(insta_data, product_id))` unique products ordered in this dataset, and bananas are the most popular item with 18726 orders. The top 10 items ordered are listed below **Plug Product Table Here**. 60% of the items ordered were reorders **INSERT HIST HERE**. Last but not least, people waited on on average `r mean(pull(insta_data, days_since_prior_order))` to place this order after their previous order. 
+
+
 
 **1A) How many aisles are there, and which aisles are the most items ordered from?**
 ```{r problem 1 aisle count, include = FALSE}
@@ -176,3 +178,9 @@ prob_1d_df %>%
 
 ```
 
+# Problem 2
+
+format the data to use appropriate variable names;
+focus on the “Overall Health” topic
+include only responses from “Excellent” to “Poor”
+organize responses as a factor taking levels ordered from “Poor” to “Excellent”
