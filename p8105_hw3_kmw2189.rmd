@@ -225,8 +225,7 @@ brfss_data %>%
 
 ```
 
-**2B) Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. 
-Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).**
+**2B) Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. Make a “spaghetti” plot of this average value over time within a state **
 ```{r problem 2b, echo = FALSE, warning = FALSE}
 prob2b_df = brfss_data %>% 
   group_by(year, state) %>% 
@@ -248,7 +247,25 @@ ggplot(data = prob2b_df, aes(x = year, y = avg_data_value, group = state, color 
 ```
 
 **2C) Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.**
-```{r}
+```{r problem 2c, echo = FALSE}
+ brfss_temp %>%
+  group_by(location, response) %>% 
+  filter(
+    year %in% c(2006 , 2010),
+    state == "NY") %>% 
+  ggplot(aes(x = location, fill = data_value)) +
+  geom_density(alpha = .5) + 
+  facet_grid(~year) + 
+  viridis::scale_fill_viridis(discrete = TRUE) +
+  theme(axis.text.x = element_text(angle = 90))
+```
 
+
+# Problem 3
+
+Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
+```{r}
+accel_data = readr::read_csv(file = "./data/accel_data.csv") %>% 
+  janitor::clean_names() 
 ```
 
