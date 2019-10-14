@@ -248,24 +248,106 @@ ggplot(data = prob2b_df, aes(x = year, y = avg_data_value, group = state, color 
 
 **2C) Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.**
 ```{r problem 2c, echo = FALSE}
- brfss_temp %>%
-  group_by(location, response) %>% 
-  filter(
-    year %in% c(2006 , 2010),
-    state == "NY") %>% 
-  ggplot(aes(x = location, fill = data_value)) +
-  geom_density(alpha = .5) + 
-  facet_grid(~year) + 
-  viridis::scale_fill_viridis(discrete = TRUE) +
-  theme(axis.text.x = element_text(angle = 90))
+##brfss_temp %>%
+  ##group_by(location, response) %>% 
+  ##filter(
+    ##year %in% c(2006 , 2010),
+    ##state == "NY") %>% 
+  ##ggplot(aes(x = location, y = data_value)) + 
+  ##geom_violin(aes(fill = data_value), color = "blue", alpha = .5) + 
+  ##stat_summary(fun.y = median, geom = "point", color = "blue", size = 4) +
+  ##facet_grid(~year) +
+  ##theme(axis.text.x = element_text(angle = 90))
+
+  #ggplot(aes(x = location, fill = data_value)) +
+  #geom_density(alpha = .5) + 
+  #facet_grid(~year) + 
+  #viridis::scale_fill_viridis(discrete = TRUE) +
+  #
 ```
 
 
 # Problem 3
 
-Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
-```{r}
+**3A) Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).**
+```{r problem 3 dataset tidying, include = FALSE}
 accel_data = readr::read_csv(file = "./data/accel_data.csv") %>% 
-  janitor::clean_names() 
+  janitor::clean_names() %>% 
+  rename(
+    obs_id = day_id) %>% 
+  mutate(
+    day = as.factor(day),
+    day = forcats::fct_relevel(day, c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")), 
+    weekday_var = ifelse(day == "Saturday" | day == "Sunday", 0, 1), 
+    week = as.factor(week),
+    )%>%
+  arrange(week, day) %>% 
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "minute", 
+    names_prefix = "activity_",
+    values_to = "activity_value"
+    ) %>% 
+  mutate(
+    minute = as.numeric(minute)
+  )
+ 
 ```
 
+
+```{r describing prob 3 dataset, include = FALSE}
+##How many weeks are covered in the dataset
+
+##How many days are covered in the dataset - there are data for 7 distinct days worth of data for each week, for a total of 34 days. 
+day_count = accel_data %>% 
+  group_by(week) %>% 
+  summarize(
+    n_distinct(day)
+  ) 
+  
+##What is the average number of minutes with activity 
+
+```
+The accelerometer dataset contains data for `r n_distinct(pull(accel_data, week))` weeks, and a total of 34 days. the data is summarized by an activity count (step count) per minute of the day. There is a total of `r nrow(accel_data)` minutes in the dataset and there are variables to indicate the day of week and whether it is a weekday (y/n). 
+
+**3B) Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?**
+```{r table for 3B, echo = FALSE}
+accel_data %>% 
+  group_by(week, day) %>% 
+  summarize(
+    total_min = sum(activity_value)
+  ) %>% 
+  pivot_wider(
+    names_from = week, 
+    values_from = total_min
+  ) %>% 
+  knitr::kable(digits = 0)
+
+```
+
+Daily values of activity range from 1440 to 685910. Most weekday data have values in the 200000 to 400000 range.  Saturdays seems to be the laziest days with 2 weeks coming in at the 1440 activity level. (or this is when they were charging the accelerometer?)
+
+
+**3C) Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.**
+```{r graph for problem 3c, echo = FALSE}
+accel_data %>% 
+  group_by(week, day) %>% 
+  ggplot(aes(x = minute, y = activity_value, group = day, color = day)) + 
+  geom_point(alpha = 0.3) +
+   labs(
+    title = "Activity Level Throughout the Day",
+    x = "Time (hour)",
+    y = "Activity Level"
+  ) +
+    theme(legend.position = "bottom") +
+  viridis::scale_color_viridis(
+    name = "Day", 
+    discrete = TRUE
+  ) + 
+  scale_x_continuous(
+    breaks = c(0, 240, 480, 720, 960, 1200), 
+    labels = c("12am", "4am", "8am","12pm", "4pm", "8pm")
+    )
+```
+
+From this plot there are daily patterns that emerge.  There are spikes in activity around 7am, presumably waking up, 11-12pm, presumably lunch, 4-6pm, leaving work, and 8-10pm, perhaps running errands or getting in a workout. I expected to see more distinct differences between weekends and weekdays, but there is not a strong pattern that emerges, besides the no movement Saturdays, which we saw in the previous table. 
