@@ -1,7 +1,7 @@
 ---
 title: "Homework 3"
 author: "Kylie Wheelock Riley"
-date: "10/8/2019"
+date: "10/14/2019"
 output: github_document
 ---
 
@@ -20,16 +20,10 @@ n_distinct(pull(insta_data, order_id))
 
 
 ## Looking at individual variables 
-#order_id - order ID has a mean of 1706298 and max value of 3421070
+#order_id - order ID has a mean of 1706298 and max value of 3421070, no real meaning in the manipulation of this var. 
 mean(pull(insta_data, order_id))
 max(pull(insta_data, order_id))
 
-insta_data %>% 
-  group_by(order_id) %>% 
-  summarize(
-    n_obs = n(),
-    n_distinct(product_id)
-  ) 
  
 
 #product_id - there are 39,123 unique products ordered in this dataset, and product 24852 is the most popular with 18,726 orders. 
@@ -46,19 +40,18 @@ max(pull(insta_data, add_to_cart_order))
  
 
 
-#reordered - 60% of items were reorders and 40% were new. Plot showing this. ## Want to figure out how to plot a percent. 
+#reordered - 60% of items were reorders and 40% were new. Plot showing this. 
 insta_data %>% 
   group_by(reordered) %>%
-  summarize(count = n()) %>%
+  summarize(count = n()) %>% 
   mutate(
-    percent = round((count/sum(count)*100))
-    )
-
+    percent_reorder = round((count/sum(count)*100))
+    ) 
 
 ggplot(insta_data, aes(x = reordered)) + 
   geom_histogram(binwidth = 0.45) +
   labs(
-    title = "frequency of items that are reordered",
+    title = "Frequency of instacart items that were reorders",
     x = "Reorder",
     y = "Frequency",
     caption = "Instacart grocery order data."
@@ -77,7 +70,7 @@ insta_data %>%
 
 
 #days_since_prior_order - on average people wait 17 days to place their next food order. 
-mean(pull(insta_data, days_since_prior_order))
+mean_days_since_prev = mean(pull(insta_data, days_since_prior_order))
 
 
 #product_name - produces a table with the top 10 items ordered.  The number 1 ordered item was bananas. 
@@ -89,7 +82,34 @@ insta_data %>%
   knitr::kable()
 
 ```
-The Instacart dataset has `r nrow(insta_data)` rows of data for `r n_distinct(pull(insta_data, order_id))` distinct orders. There were `r n_distinct(pull(insta_data, product_id))` unique products ordered in this dataset, and bananas are the most popular item with 18726 orders. The top 10 items ordered are listed below **Plug Product Table Here**. 60% of the items ordered were reorders **INSERT HIST HERE**. Last but not least, people waited on on average `r mean(pull(insta_data, days_since_prior_order))` days to place this order after their previous order. 
+The Instacart dataset has `r nrow(insta_data)` rows of data for `r n_distinct(pull(insta_data, order_id))` distinct orders. There were `r n_distinct(pull(insta_data, product_id))` unique products ordered in this dataset. Bananas are the most popular item with 18726 orders. The top 10 items ordered are listed below:
+```{r, echo = FALSE}
+insta_data %>% 
+  group_by(product_name) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count)) %>% 
+  slice(1:10) %>% 
+  knitr::kable()
+```
+
+60% of the items ordered were reorders. 
+```{r, echo = FALSE}
+ggplot(insta_data, aes(x = reordered)) + 
+  geom_histogram(binwidth = 0.45) +
+  labs(
+    title = "Frequency of instacart items that were reorders",
+    x = "Reorder",
+    y = "Frequency",
+    caption = "Instacart grocery order data."
+  ) +
+  scale_x_continuous(
+    breaks = c(0, 1), 
+    labels = c("no", "yes")
+    )
+```
+
+Last but not least, people waited on on average `r round(mean_days_since_prev, digits = 2)` days since their last order to place the order in this dataset. 
+
 
 
 **1A) How many aisles are there, and which aisles are the most items ordered from?**
@@ -112,21 +132,18 @@ insta_data %>%
 ```{r prob 1B, echo = FALSE}
 aisles_over_10000 = 
  insta_data %>% 
-  group_by(aisle_id) %>%
+  group_by(department, aisle_id) %>%
   summarize(count = n()) %>%
   arrange(desc(count)) %>% 
   filter(count > 10000) 
  
-ggplot(aisles_over_10000, aes(x = aisle_id, y = count)) + 
-  geom_point(aes(alpha = .5))
-
-ggplot(aisles_over_10000, aes(x = aisle_id)) + 
-  geom_histogram(binwidth = 30) +
+ggplot(aisles_over_10000, aes(x = aisle_id, y = count, color = department)) + 
+  geom_point(aes(alpha = .5)) +
+  theme(legend.position = "bottom") + 
   labs(
-    title = "Aisles with the most Orders",
+    title = "Aisles with over 10,000 products ordered",
     x = "Aisle",
-    y = "Frequency",
-    caption = "Aisles with over 10,000 products ordered"
+    y = "Frequency"
   ) 
 
 ```
@@ -197,7 +214,7 @@ brfss_temp = brfss_data %>%
 
 **2A) In 2002, which states were observed at 7 or more locations? What about in 2010?**
 
-In 2002 there were 6 states that had 7 or more loctions.  
+In 2002 there were 6 states observed at 7 or more loctions.  
 ```{r 2002 location table, echo = FALSE}
 brfss_data %>%
   group_by(state) %>% 
@@ -211,7 +228,7 @@ brfss_data %>%
 
 ```
 
-In 2010 there were 14 states that had 7 or more locations. 
+In 2010 there were 14 states observed at 7 or more locations. 
 ```{r 2010 location table, echo = FALSE}
 brfss_data %>%
   group_by(state) %>% 
@@ -225,7 +242,8 @@ brfss_data %>%
 
 ```
 
-**2B) Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. Make a “spaghetti” plot of this average value over time within a state **
+**2B) Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. Make a “spaghetti” plot of this average value over time within a state**
+
 ```{r problem 2b, echo = FALSE, warning = FALSE}
 prob2b_df = brfss_data %>% 
   group_by(year, state) %>% 
@@ -248,22 +266,18 @@ ggplot(data = prob2b_df, aes(x = year, y = avg_data_value, group = state, color 
 
 **2C) Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.**
 ```{r problem 2c, echo = FALSE}
-##brfss_temp %>%
-  ##group_by(location, response) %>% 
-  ##filter(
-    ##year %in% c(2006 , 2010),
-    ##state == "NY") %>% 
-  ##ggplot(aes(x = location, y = data_value)) + 
-  ##geom_violin(aes(fill = data_value), color = "blue", alpha = .5) + 
-  ##stat_summary(fun.y = median, geom = "point", color = "blue", size = 4) +
-  ##facet_grid(~year) +
-  ##theme(axis.text.x = element_text(angle = 90))
+brfss_temp %>%
+  group_by(location, response) %>% 
+  filter(
+    year %in% c(2006 , 2010),
+    state == "NY") %>% 
+  ggplot(aes(x = location, fill = data_value)) +
+  geom_density(alpha = .5) + 
+  facet_grid(~year) + 
+  viridis::scale_fill_viridis(discrete = TRUE)+
+  theme(axis.text.x = element_text(angle = 90))
 
-  #ggplot(aes(x = location, fill = data_value)) +
-  #geom_density(alpha = .5) + 
-  #facet_grid(~year) + 
-  #viridis::scale_fill_viridis(discrete = TRUE) +
-  #
+  
 ```
 
 
